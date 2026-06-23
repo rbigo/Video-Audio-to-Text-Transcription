@@ -2,6 +2,8 @@
 
 Windows local transcription tool for Bilibili, YouTube, local video, and local audio.
 
+[中文介绍](README.zh-CN.md)
+
 This repository contains source code and deployment scripts only. It intentionally does not include local virtual environments, ffmpeg, uv, downloaded models, caches, cookies, media files, transcripts, or logs.
 
 ## Features
