@@ -1,4 +1,4 @@
-# bili-whisper
+# Video-Audio-to-Text-Transcription
 
 Windows local transcription tool for Bilibili, YouTube, local video, and local audio.
 
