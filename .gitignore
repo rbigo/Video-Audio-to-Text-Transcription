@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+
+# Local virtual environment
+.venv/
+
+# Local runtime binaries and downloaded toolchains
+runtime/**
+!runtime/
+!runtime/README.md
+
+# Local caches and downloaded models
+cache/
+models/
+
+# User data, cookies, media, transcripts, and logs
+data/**
+!data/
+!data/README.md
+!data/cookies/
+!data/cookies/README.md
+!data/cookies/.gitkeep
+data/cookies/*.txt
+
+# Local environment and editor state
+.env
+*.log
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

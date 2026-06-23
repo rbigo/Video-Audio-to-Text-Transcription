@@ -1,0 +1,35 @@
+[project]
+name = "bili-whisper"
+version = "0.1.0"
+description = "Windows local Bilibili and media transcription tool."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "yt-dlp",
+  "faster-whisper",
+  "rich",
+  "tqdm",
+  "typer",
+  "pydantic",
+  "orjson",
+  "nvidia-cublas-cu12",
+  "nvidia-cudnn-cu12"
+]
+
+[project.optional-dependencies]
+funasr = [
+  "funasr",
+  "modelscope",
+  "torch",
+  "torchaudio"
+]
+
+[project.scripts]
+bili-whisper = "bili_whisper.cli:app"
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
