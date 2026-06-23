@@ -15,6 +15,7 @@ from .config import (
     DEFAULT_DEVICE,
     DEFAULT_ENGINE,
     DEFAULT_FASTER_WHISPER_MODEL,
+    DEFAULT_FUNASR_MODEL,
     DEFAULT_LANGUAGE,
     apply_local_environment,
 )
@@ -37,6 +38,7 @@ from .paths import (
 )
 from .pipeline import compare as compare_impl
 from .pipeline import process_any, process_file
+from .model_preload import preload_faster_whisper, preload_funasr
 from .utils import CommandError, setup_logging
 
 app = typer.Typer(help="Bilibili and local media transcription tool.")
@@ -186,6 +188,25 @@ def compare(file: Path, language: str = typer.Option(DEFAULT_LANGUAGE, "--langua
     outputs = _run_or_exit(lambda: compare_impl(file, language=language))
     for path in outputs:
         typer.echo(path)
+
+
+@app.command("preload-models")
+def preload_models(
+    engine: str = typer.Option("faster-whisper", "--engine", help="faster-whisper, funasr, or all"),
+    faster_model: str = typer.Option(DEFAULT_FASTER_WHISPER_MODEL, "--faster-model"),
+    funasr_model: str = typer.Option(DEFAULT_FUNASR_MODEL, "--funasr-model"),
+    language: str = typer.Option(DEFAULT_LANGUAGE, "--language"),
+) -> None:
+    """Download ASR models into the project-local cache before the first transcription."""
+    normalized = engine.strip().lower()
+    if normalized not in {"faster-whisper", "funasr", "all"}:
+        raise typer.BadParameter("engine must be faster-whisper, funasr, or all")
+    if normalized in {"faster-whisper", "all"}:
+        result = _run_or_exit(lambda: preload_faster_whisper(faster_model))
+        typer.echo(f"{result.engine}: {result.model} -> {result.path}")
+    if normalized in {"funasr", "all"}:
+        result = _run_or_exit(lambda: preload_funasr(funasr_model, language=language))
+        typer.echo(f"{result.engine}: {result.model} -> {result.path or 'project-local ModelScope cache'}")
 
 
 def _module_status(module_name: str) -> str:

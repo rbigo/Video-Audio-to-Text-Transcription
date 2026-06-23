@@ -2,7 +2,7 @@
 
 This directory is intentionally source-only in Git.
 
-Place local tools here after cloning:
+`scripts\bootstrap.ps1` downloads missing runtime tools here automatically. If that fails on your network, place local tools here manually:
 
 ```text
 runtime\bin\uv.exe

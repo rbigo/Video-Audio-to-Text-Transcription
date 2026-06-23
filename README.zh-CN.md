@@ -2,7 +2,7 @@
 
 这是一个面向 Windows 本地使用的音视频转文字工具。它可以处理 B站链接、YouTube 链接、本地视频和本地音频，输出 `txt`、`srt`、`json` 三种格式。
 
-本仓库只发布源码和部署脚本，不包含本机成品环境。也就是说，仓库里不会提交 `.venv`、ffmpeg、uv、模型文件、缓存、Cookie、下载的视频音频、转写结果和日志。别人 clone 后按说明准备本地工具和依赖即可部署。
+本仓库只发布源码和部署脚本，不提交本机成品环境。也就是说，仓库里不会提交 `.venv`、ffmpeg、uv、模型文件、缓存、Cookie、下载的视频音频、转写结果和日志。别人 clone 后运行初始化脚本即可自动下载缺失的运行组件，也可以提前预下载默认识别模型。
 
 ## 主要功能
 
@@ -33,31 +33,40 @@ git clone https://github.com/rbigo/Video-Audio-to-Text-Transcription.git
 cd Video-Audio-to-Text-Transcription
 ```
 
-手动准备以下本地工具：
+推荐初始化命令：
+
+```powershell
+.\scripts\bootstrap.ps1 -WithDeno -PreloadModels
+.\scripts\doctor.ps1
+```
+
+这会自动下载缺失的本地运行组件：
 
 ```text
 runtime\bin\uv.exe
+runtime\bin\deno.exe
 runtime\ffmpeg\bin\ffmpeg.exe
 runtime\ffmpeg\bin\ffprobe.exe
 ```
 
-如果需要处理部分 YouTube JS challenge，可以额外放置：
-
-```text
-runtime\bin\deno.exe
-```
-
-初始化环境：
+同时会预下载默认的 `faster-whisper` 模型。若也想安装 FunASR 并预下载 SenseVoiceSmall：
 
 ```powershell
-.\scripts\bootstrap.ps1
+.\scripts\bootstrap.ps1 -WithFunASR -WithDeno -PreloadModels
+```
+
+如果当前网络不能自动下载运行组件，也可以手动放到上面的路径，然后执行：
+
+```powershell
+.\scripts\bootstrap.ps1 -NoDownloadTools
 .\scripts\doctor.ps1
 ```
 
-如需 FunASR：
+也可以之后单独预下载模型：
 
 ```powershell
-.\scripts\bootstrap.ps1 -WithFunASR
+.\scripts\run.ps1 preload-models --engine faster-whisper
+.\scripts\run.ps1 preload-models --engine all
 ```
 
 ## 常用命令

@@ -13,43 +13,58 @@ Windows 本地 B站视频 / 本地视频 / 本地音频转文字工具。
 - 默认不读取浏览器 Cookie
 - 所有缓存、模型、输出、日志都固定在仓库根目录 `<repo>` 下
 
-## 1. 准备 uv.exe
+## 1. 自动准备运行组件
 
-请手动下载 `uv.exe`，并放到：
-
-```powershell
-<repo>\runtime\bin\uv.exe
-```
-
-项目不会自动把 uv 安装到 C 盘。`<repo>` 表示你 clone 后的仓库根目录。
-
-## 2. 准备 ffmpeg
-
-请手动准备：
-
-```text
-ffmpeg.exe
-ffprobe.exe
-```
-
-并放到：
-
-```powershell
-<repo>\runtime\ffmpeg\bin
-```
-
-## 3. 初始化
+推荐直接运行：
 
 ```powershell
 cd <repo>
-.\scripts\env.ps1
-.\scripts\bootstrap.ps1
+.\scripts\bootstrap.ps1 -WithDeno -PreloadModels
+.\scripts\doctor.ps1
 ```
 
-安装 FunASR 可选依赖：
+bootstrap 会自动下载缺失的本地运行组件到仓库目录：
+
+```text
+<repo>\runtime\bin\uv.exe
+<repo>\runtime\bin\deno.exe
+<repo>\runtime\ffmpeg\bin\ffmpeg.exe
+<repo>\runtime\ffmpeg\bin\ffprobe.exe
+```
+
+其中 `deno.exe` 只在 `-WithDeno` 时下载，用于部分 YouTube JS challenge 场景。
+
+如果网络环境无法自动下载，也可以手动把这些文件放到上述路径，然后运行：
 
 ```powershell
-.\scripts\bootstrap.ps1 -WithFunASR
+.\scripts\bootstrap.ps1 -NoDownloadTools
+```
+
+## 2. 初始化
+
+```powershell
+cd <repo>
+.\scripts\bootstrap.ps1 -WithDeno -PreloadModels
+```
+
+安装 FunASR 可选依赖并预下载 SenseVoiceSmall：
+
+```powershell
+.\scripts\bootstrap.ps1 -WithFunASR -WithDeno -PreloadModels
+```
+
+## 3. 预下载模型
+
+首次转写时模型也会自动下载。若希望部署后先把默认模型准备好，可运行：
+
+```powershell
+.\scripts\run.ps1 preload-models --engine faster-whisper
+```
+
+已安装 FunASR 时，也可以一次预下载两套模型：
+
+```powershell
+.\scripts\run.ps1 preload-models --engine all
 ```
 
 ## 4. 检查环境

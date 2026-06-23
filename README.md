@@ -4,7 +4,7 @@ Windows local transcription tool for Bilibili, YouTube, local video, and local a
 
 [中文介绍](README.zh-CN.md)
 
-This repository contains source code and deployment scripts only. It intentionally does not include local virtual environments, ffmpeg, uv, downloaded models, caches, cookies, media files, transcripts, or logs.
+This repository contains source code and deployment scripts only. It intentionally does not commit local virtual environments, ffmpeg, uv, downloaded models, caches, cookies, media files, transcripts, or logs. The bootstrap script downloads the missing runtime tools and can prefetch the default ASR model into the project-local cache.
 
 ## Features
 
@@ -25,38 +25,42 @@ cd bili-whisper
 
 The scripts now detect the repository root automatically. You can clone the project to any writable path, though a non-system drive is recommended because models and caches can be large.
 
-## Required Local Tools
+## Bootstrap
 
-Download `uv.exe` and put it here:
+Recommended first run after cloning:
+
+```powershell
+.\scripts\bootstrap.ps1 -WithDeno -PreloadModels
+.\scripts\doctor.ps1
+```
+
+This automatically downloads missing runtime tools into the repository:
 
 ```text
 runtime\bin\uv.exe
-```
-
-Download or extract ffmpeg and put these files here:
-
-```text
+runtime\bin\deno.exe
 runtime\ffmpeg\bin\ffmpeg.exe
 runtime\ffmpeg\bin\ffprobe.exe
 ```
 
-For YouTube JS challenge solving, optional `deno.exe` can be placed here:
-
-```text
-runtime\bin\deno.exe
-```
-
-## Bootstrap
+It also preloads the default `faster-whisper` model. If you also want FunASR dependencies and the SenseVoiceSmall model:
 
 ```powershell
-.\scripts\bootstrap.ps1
+.\scripts\bootstrap.ps1 -WithFunASR -WithDeno -PreloadModels
+```
+
+If automatic runtime downloads are unavailable on your network, place the files manually in the paths above and run:
+
+```powershell
+.\scripts\bootstrap.ps1 -NoDownloadTools
 .\scripts\doctor.ps1
 ```
 
-Install the optional FunASR dependencies:
+You can also preload models later without reinstalling dependencies:
 
 ```powershell
-.\scripts\bootstrap.ps1 -WithFunASR
+.\scripts\run.ps1 preload-models --engine faster-whisper
+.\scripts\run.ps1 preload-models --engine all
 ```
 
 ## Run

@@ -1,5 +1,8 @@
 param(
-    [switch]$WithFunASR
+    [switch]$WithFunASR,
+    [switch]$WithDeno,
+    [switch]$NoDownloadTools,
+    [switch]$PreloadModels
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,13 +15,16 @@ $Ffprobe = "$Root\runtime\ffmpeg\bin\ffprobe.exe"
 $Venv = "$Root\.venv"
 $Project = "$Root\app"
 
-if (-not (Test-Path -LiteralPath $Uv)) {
-    Write-Host "Please download uv.exe manually and place it at $Root\runtime\bin\uv.exe" -ForegroundColor Red
-    exit 1
-}
-
-if (-not (Test-Path -LiteralPath $Ffmpeg) -or -not (Test-Path -LiteralPath $Ffprobe)) {
-    Write-Host "Please extract ffmpeg.exe and ffprobe.exe to $Root\runtime\ffmpeg\bin" -ForegroundColor Yellow
+if (-not $NoDownloadTools) {
+    & "$PSScriptRoot\install-runtime.ps1" -WithDeno:$WithDeno
+} else {
+    if (-not (Test-Path -LiteralPath $Uv)) {
+        Write-Host "Please download uv.exe manually and place it at $Root\runtime\bin\uv.exe" -ForegroundColor Red
+        exit 1
+    }
+    if (-not (Test-Path -LiteralPath $Ffmpeg) -or -not (Test-Path -LiteralPath $Ffprobe)) {
+        Write-Host "Please extract ffmpeg.exe and ffprobe.exe to $Root\runtime\ffmpeg\bin" -ForegroundColor Yellow
+    }
 }
 
 if (-not (Test-Path -LiteralPath "$Venv\Scripts\python.exe")) {
@@ -32,6 +38,11 @@ if ($WithFunASR) {
 }
 
 & "$PSScriptRoot\patch-yt-dlp-bilibili.ps1"
+
+if ($PreloadModels) {
+    $Engine = if ($WithFunASR) { "all" } else { "faster-whisper" }
+    & "$Venv\Scripts\python.exe" -m bili_whisper preload-models --engine $Engine
+}
 
 Write-Host "Bootstrap finished." -ForegroundColor Green
 Write-Host "Run .\scripts\doctor.ps1 to verify the environment."
