@@ -10,6 +10,7 @@ This repository contains source code and deployment scripts only. It intentional
 
 - Bilibili and YouTube URL transcription through `yt-dlp`
 - Local video and audio transcription
+- Local downloaded video to WAV audio extraction without transcription
 - `faster-whisper` as the default ASR engine
 - Optional `FunASR / SenseVoiceSmall` comparison engine
 - `txt`, `srt`, and `json` output
@@ -76,6 +77,12 @@ Transcribe a local file:
 
 ```powershell
 .\scripts\run.ps1 transcribe "D:\path\to\video-or-audio.mp4"
+```
+
+Extract audio from a local downloaded video without transcription:
+
+```powershell
+.\scripts\run.ps1 extract-audio "D:\path\to\downloaded-video.mp4"
 ```
 
 Compare faster-whisper and FunASR:

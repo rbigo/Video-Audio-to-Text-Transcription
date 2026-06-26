@@ -9,7 +9,7 @@ from pathlib import Path
 from tkinter import DISABLED, END, NORMAL, Button, Checkbutton, Entry, Label, StringVar, Text, Tk, filedialog, ttk
 
 from .config import DEFAULT_COMPUTE_TYPE, DEFAULT_DEVICE, DEFAULT_FASTER_WHISPER_MODEL, DEFAULT_LANGUAGE, apply_local_environment
-from .paths import ROOT, TRANSCRIPTS_DIR, ensure_dirs
+from .paths import AUDIO_DIR, ROOT, TRANSCRIPTS_DIR, ensure_dirs
 
 
 class BiliWhisperGui:
@@ -44,7 +44,12 @@ class BiliWhisperGui:
         Button(self.root, text="Browse", command=self._browse).grid(row=0, column=6, sticky="ew", **pad)
 
         Label(self.root, text="Mode").grid(row=1, column=0, sticky="w", **pad)
-        ttk.Combobox(self.root, textvariable=self.mode_var, values=["all", "transcribe", "compare", "download-audio", "list-subs"], state="readonly").grid(row=1, column=1, sticky="ew", **pad)
+        ttk.Combobox(
+            self.root,
+            textvariable=self.mode_var,
+            values=["all", "transcribe", "compare", "extract-audio", "download-audio", "list-subs"],
+            state="readonly",
+        ).grid(row=1, column=1, sticky="ew", **pad)
 
         Label(self.root, text="Engine").grid(row=1, column=2, sticky="w", **pad)
         ttk.Combobox(self.root, textvariable=self.engine_var, values=["faster-whisper", "funasr"], state="readonly").grid(row=1, column=3, sticky="ew", **pad)
@@ -145,7 +150,8 @@ class BiliWhisperGui:
             self.status_var.set("Stopping")
 
     def _open_outputs(self) -> None:
-        os.startfile(str(TRANSCRIPTS_DIR))
+        target = AUDIO_DIR if self.mode_var.get() in {"extract-audio", "download-audio"} else TRANSCRIPTS_DIR
+        os.startfile(str(target))
 
     def _drain_queue(self) -> None:
         try:

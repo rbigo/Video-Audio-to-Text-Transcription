@@ -19,6 +19,7 @@ from .config import (
     DEFAULT_LANGUAGE,
     apply_local_environment,
 )
+from .audio_extract import extract_video_audio
 from .downloader import download_audio as download_audio_impl
 from .downloader import download_subs as download_subs_impl
 from .downloader import list_subs as list_subs_impl
@@ -124,6 +125,12 @@ def download_subs(url: str) -> None:
 def download_audio(url: str) -> None:
     """Download and convert URL audio to 16 kHz mono WAV."""
     _run_or_exit(lambda: typer.echo(download_audio_impl(url)))
+
+
+@app.command("extract-audio")
+def extract_audio_command(file: Path) -> None:
+    """Convert a local downloaded video file to WAV audio without transcription."""
+    _run_or_exit(lambda: typer.echo(extract_video_audio(file)))
 
 
 @app.command()

@@ -111,6 +111,20 @@ YouTube 也通过同一套 `yt-dlp + faster-whisper` 流程处理：
 
 本地视频会先用 ffmpeg 提取为 `16kHz`、单声道、`pcm_s16le` WAV，再转写。
 
+## 6.1 只把已下载视频转换为音频
+
+如果只想把本地已下载的视频提取成 WAV 音频，不做转写：
+
+```powershell
+.\scripts\run.ps1 extract-audio "<repo>\data\downloads\test.mp4"
+```
+
+输出文件会写入：
+
+```powershell
+<repo>\data\audio
+```
+
 ## 7. 本地音频转文字
 
 ```powershell
@@ -191,7 +205,7 @@ FunASR 模型和 ModelScope 缓存会固定在：
 .\scripts\gui.ps1
 ```
 
-GUI 支持粘贴 URL、选择本地音视频、选择 `faster-whisper` / `funasr` / `compare`，并可打开输出目录。
+GUI 支持粘贴 URL、选择本地音视频、选择 `faster-whisper` / `funasr` / `compare` / `extract-audio`，并可打开输出目录。
 
 ## 11. Cookie 使用方式
 

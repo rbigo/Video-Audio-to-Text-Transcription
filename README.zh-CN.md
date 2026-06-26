@@ -9,6 +9,7 @@
 - 支持 B站视频转文字。
 - 支持 YouTube 视频转文字。
 - 支持本地视频和本地音频转文字。
+- 支持只把本地已下载视频转换成 WAV 音频，不做转写。
 - 默认使用 `faster-whisper`，适合有 NVIDIA 显卡的本地机器。
 - 可选安装 `FunASR / SenseVoiceSmall`，用于中文口语识别对比。
 - 可生成纯文本、字幕和结构化 JSON。
@@ -87,6 +88,12 @@ runtime\ffmpeg\bin\ffprobe.exe
 
 ```powershell
 .\scripts\run.ps1 transcribe "D:\path\to\video-or-audio.mp4"
+```
+
+只把已下载的视频转换为音频：
+
+```powershell
+.\scripts\run.ps1 extract-audio "D:\path\to\downloaded-video.mp4"
 ```
 
 对比两个识别引擎：
