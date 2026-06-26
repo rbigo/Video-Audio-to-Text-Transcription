@@ -111,11 +111,12 @@ YouTube 也通过同一套 `yt-dlp + faster-whisper` 流程处理：
 
 本地视频会先用 ffmpeg 提取为 `16kHz`、单声道、`pcm_s16le` WAV，再转写。
 
-## 6.1 只把已下载视频转换为音频
+## 6.1 只把网页视频或已下载视频转换为音频
 
-如果只想把本地已下载的视频提取成 WAV 音频，不做转写：
+如果只想把 B站 / YouTube 链接或本地已下载视频提取成 WAV 音频，不做转写：
 
 ```powershell
+.\scripts\run.ps1 extract-audio "https://www.bilibili.com/video/BVxxxx"
 .\scripts\run.ps1 extract-audio "<repo>\data\downloads\test.mp4"
 ```
 

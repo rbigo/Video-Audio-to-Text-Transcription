@@ -90,9 +90,10 @@ runtime\ffmpeg\bin\ffprobe.exe
 .\scripts\run.ps1 transcribe "D:\path\to\video-or-audio.mp4"
 ```
 
-只把已下载的视频转换为音频：
+只把网页视频或已下载视频转换为音频：
 
 ```powershell
+.\scripts\run.ps1 extract-audio "https://www.bilibili.com/video/BVxxxx"
 .\scripts\run.ps1 extract-audio "D:\path\to\downloaded-video.mp4"
 ```
 

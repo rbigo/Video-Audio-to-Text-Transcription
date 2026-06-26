@@ -128,9 +128,9 @@ def download_audio(url: str) -> None:
 
 
 @app.command("extract-audio")
-def extract_audio_command(file: Path) -> None:
-    """Convert a local downloaded video file to WAV audio without transcription."""
-    _run_or_exit(lambda: typer.echo(extract_video_audio(file)))
+def extract_audio_command(source: str) -> None:
+    """Convert a URL or local downloaded video file to WAV audio without transcription."""
+    _run_or_exit(lambda: typer.echo(extract_video_audio(source)))
 
 
 @app.command()
@@ -230,6 +230,9 @@ def _run_or_exit(func):
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
         _print_cookie_hint(str(exc))
+        raise typer.Exit(code=1) from exc
+    except (OSError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
 

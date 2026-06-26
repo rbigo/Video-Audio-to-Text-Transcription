@@ -79,9 +79,10 @@ Transcribe a local file:
 .\scripts\run.ps1 transcribe "D:\path\to\video-or-audio.mp4"
 ```
 
-Extract audio from a local downloaded video without transcription:
+Extract audio from a URL or a local downloaded video without transcription:
 
 ```powershell
+.\scripts\run.ps1 extract-audio "https://www.bilibili.com/video/BVxxxx"
 .\scripts\run.ps1 extract-audio "D:\path\to\downloaded-video.mp4"
 ```
 
