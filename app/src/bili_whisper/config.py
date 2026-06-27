@@ -5,12 +5,12 @@ import os
 from .paths import CACHE_DIR, FASTER_WHISPER_MODEL_DIR, FUNASR_MODEL_DIR, ROOT
 
 DEFAULT_ENGINE = "faster-whisper"
-DEFAULT_FASTER_WHISPER_MODEL = "large-v3-turbo"
+DEFAULT_FASTER_WHISPER_MODEL = "large-v3"
 DEFAULT_FUNASR_MODEL = "iic/SenseVoiceSmall"
 DEFAULT_DEVICE = "cuda"
-DEFAULT_COMPUTE_TYPE = "float16"
+DEFAULT_COMPUTE_TYPE = "int8_float16"
 DEFAULT_LANGUAGE = "zh"
-DEFAULT_BEAM_SIZE = 5
+DEFAULT_BEAM_SIZE = 8
 
 
 def apply_local_environment() -> None:

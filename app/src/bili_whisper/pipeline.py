@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
+import orjson
+
+from .bilibili_playlist import BilibiliPlaylist, fetch_bilibili_playlist, format_playlist_text, playlist_to_dict
 from .config import DEFAULT_COMPUTE_TYPE, DEFAULT_DEVICE, DEFAULT_ENGINE, DEFAULT_FASTER_WHISPER_MODEL, DEFAULT_FUNASR_MODEL, DEFAULT_LANGUAGE
 from .downloader import download_audio, download_subs, list_subs
 from .media import extract_audio, is_audio, is_url, is_video
@@ -10,7 +14,7 @@ from .subtitle import parse_subtitle_file, write_json, write_srt, write_txt
 from .transcriber_base import Segment
 from .transcriber_faster_whisper import FasterWhisperTranscriber
 from .transcriber_funasr import FunASRTranscriber
-from .utils import get_logger, sanitize_filename
+from .utils import get_logger, sanitize_filename, write_text
 
 
 def process_url(
@@ -130,6 +134,112 @@ def process_any(value: str, **kwargs) -> list[Path]:
     return process_file(Path(value), **kwargs)
 
 
+def list_playlist(url: str) -> BilibiliPlaylist:
+    return fetch_bilibili_playlist(url)
+
+
+def transcribe_playlist(
+    url: str,
+    *,
+    engine: str = DEFAULT_ENGINE,
+    model: str | None = None,
+    device: str = DEFAULT_DEVICE,
+    compute_type: str = DEFAULT_COMPUTE_TYPE,
+    language: str = DEFAULT_LANGUAGE,
+    vad: bool = True,
+    output_dir: Path = TRANSCRIPTS_DIR,
+    limit: int | None = None,
+    dry_run: bool = False,
+) -> list[Path]:
+    playlist = fetch_bilibili_playlist(url)
+    if limit is not None and limit < 1:
+        raise ValueError("limit must be greater than 0.")
+    episodes = playlist.episodes[:limit] if limit else playlist.episodes
+    if not episodes:
+        raise RuntimeError("No episodes were found in the Bilibili playlist.")
+
+    directory_name = sanitize_filename(f"{playlist.title} [{playlist.id or playlist.source_bvid}]")
+    playlist_dir = safe_output_path(output_dir / directory_name)
+    playlist_dir.mkdir(parents=True, exist_ok=True)
+    text_path = write_text(playlist_dir / "playlist.txt", format_playlist_text(playlist))
+    results: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    manifest_path = _write_playlist_manifest(
+        playlist_dir,
+        playlist=playlist,
+        selected_count=len(episodes),
+        dry_run=dry_run,
+        results=results,
+        errors=errors,
+    )
+    outputs = [text_path, manifest_path]
+    if dry_run:
+        return outputs
+
+    logger = get_logger("app", "app.log")
+    for episode in episodes:
+        logger.info("playlist episode index=%s bvid=%s title=%s", episode.index, episode.bvid, episode.title)
+        try:
+            episode_outputs = process_url(
+                episode.url,
+                engine=engine,
+                model=model,
+                device=device,
+                compute_type=compute_type,
+                language=language,
+                vad=vad,
+                output_dir=playlist_dir,
+            )
+        except Exception as exc:
+            logger.exception("playlist episode failed bvid=%s", episode.bvid)
+            errors.append(
+                {
+                    "index": episode.index,
+                    "bvid": episode.bvid,
+                    "title": episode.title,
+                    "url": episode.url,
+                    "error": str(exc),
+                }
+            )
+        else:
+            results.append(
+                {
+                    "index": episode.index,
+                    "bvid": episode.bvid,
+                    "title": episode.title,
+                    "url": episode.url,
+                    "outputs": [str(path) for path in episode_outputs],
+                }
+            )
+            outputs.extend(episode_outputs)
+        manifest_path = _write_playlist_manifest(
+            playlist_dir,
+            playlist=playlist,
+            selected_count=len(episodes),
+            dry_run=dry_run,
+            results=results,
+            errors=errors,
+        )
+
+    if errors:
+        error_text = "\n".join(
+            "\n".join(
+                [
+                    f"{item['index']:02d}. {item['bvid']} {item['title']}",
+                    f"    {item['url']}",
+                    f"    {item['error']}",
+                    "",
+                ]
+            )
+            for item in errors
+        )
+        errors_path = write_text(playlist_dir / "playlist-errors.txt", error_text)
+        outputs.append(errors_path)
+    if errors and not results:
+        raise RuntimeError(f"All playlist episodes failed. See manifest: {manifest_path}")
+    return outputs
+
+
 def compare(path: Path, *, language: str = DEFAULT_LANGUAGE, output_dir: Path = TRANSCRIPTS_DIR) -> list[Path]:
     outputs: list[Path] = []
     input_path = path.expanduser().resolve(strict=True)
@@ -215,6 +325,29 @@ def _write_outputs(
     )
     get_logger("app", "app.log").info("outputs=%s", [str(path) for path in (txt, srt, json_path)])
     return [txt, srt, json_path]
+
+
+def _write_playlist_manifest(
+    directory: Path,
+    *,
+    playlist: BilibiliPlaylist,
+    selected_count: int,
+    dry_run: bool,
+    results: list[dict[str, Any]],
+    errors: list[dict[str, Any]],
+) -> Path:
+    target = safe_output_path(directory / "playlist.json")
+    payload = {
+        "playlist": playlist_to_dict(playlist),
+        "selected_count": selected_count,
+        "dry_run": dry_run,
+        "completed_count": len(results),
+        "failed_count": len(errors),
+        "results": results,
+        "errors": errors,
+    }
+    target.write_bytes(orjson.dumps(payload, option=orjson.OPT_INDENT_2 | orjson.OPT_APPEND_NEWLINE))
+    return target
 
 
 def _engine_dir_name(engine: str) -> str:

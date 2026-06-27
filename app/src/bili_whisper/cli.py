@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+import orjson
 
+from .bilibili_playlist import format_playlist_text, playlist_to_dict
 from .config import (
     DEFAULT_COMPUTE_TYPE,
     DEFAULT_DEVICE,
@@ -38,7 +40,9 @@ from .paths import (
     safe_output_path,
 )
 from .pipeline import compare as compare_impl
+from .pipeline import list_playlist as list_playlist_impl
 from .pipeline import process_any, process_file
+from .pipeline import transcribe_playlist as transcribe_playlist_impl
 from .model_preload import preload_faster_whisper, preload_funasr
 from .utils import CommandError, setup_logging
 
@@ -131,6 +135,51 @@ def download_audio(url: str) -> None:
 def extract_audio_command(source: str) -> None:
     """Convert a URL or local downloaded video file to WAV audio without transcription."""
     _run_or_exit(lambda: typer.echo(extract_video_audio(source)))
+
+
+@app.command("list-playlist")
+def list_playlist(
+    url: str,
+    json_output: bool = typer.Option(False, "--json", help="Print machine-readable playlist JSON."),
+) -> None:
+    """List the UP collection or series that contains a Bilibili video."""
+    playlist = _run_or_exit(lambda: list_playlist_impl(url))
+    if json_output:
+        typer.echo(orjson.dumps(playlist_to_dict(playlist), option=orjson.OPT_INDENT_2).decode("utf-8"))
+    else:
+        typer.echo(format_playlist_text(playlist), nl=False)
+
+
+@app.command("transcribe-playlist")
+def transcribe_playlist(
+    url: str,
+    engine: str = typer.Option(DEFAULT_ENGINE, "--engine"),
+    model: Optional[str] = typer.Option(None, "--model"),
+    device: str = typer.Option(DEFAULT_DEVICE, "--device"),
+    compute_type: str = typer.Option(DEFAULT_COMPUTE_TYPE, "--compute-type"),
+    language: str = typer.Option(DEFAULT_LANGUAGE, "--language"),
+    vad: bool = typer.Option(True, "--vad/--no-vad"),
+    output_dir: Path = typer.Option(TRANSCRIPTS_DIR, "--output-dir"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="Process only the first N playlist episodes."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Write the playlist manifest without downloading or transcribing."),
+) -> None:
+    """Transcribe every video in the UP collection or series that contains a Bilibili video."""
+    outputs = _run_or_exit(
+        lambda: transcribe_playlist_impl(
+            url,
+            engine=engine,
+            model=model,
+            device=device,
+            compute_type=compute_type,
+            language=language,
+            vad=vad,
+            output_dir=safe_output_path(output_dir),
+            limit=limit,
+            dry_run=dry_run,
+        )
+    )
+    for path in outputs:
+        typer.echo(path)
 
 
 @app.command()

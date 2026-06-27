@@ -5,6 +5,7 @@ Windows 本地 B站视频 / 本地视频 / 本地音频转文字工具。
 功能：
 
 - B站视频转文字
+- B站 UP 主合集 / 系列解析和批量转文字
 - 本地视频转文字
 - 本地音频转文字
 - 生成 `txt` / `srt` / `json`
@@ -89,7 +90,29 @@ cd <repo>
 2. 如果有可用字幕，转换为 `txt` / `srt` / `json`。
 3. 如果没有字幕，下载音频并转写。
 
-## 5.1 YouTube 链接转文字
+## 5.1 B站 UP 主合集 / 系列批量转文字
+
+传入合集 / 系列里的任意一个视频链接，即可解析出这套视频：
+
+```powershell
+.\scripts\run.ps1 list-playlist "https://www.bilibili.com/video/BVxxxx"
+```
+
+批量转录整套视频：
+
+```powershell
+.\scripts\run.ps1 transcribe-playlist "https://www.bilibili.com/video/BVxxxx"
+```
+
+批量结果会写入：
+
+```text
+<repo>\data\transcripts\<合集名>\
+```
+
+其中 `playlist.txt` 是可读清单，`playlist.json` 是结构化清单；每个视频仍会生成自己的 `transcript.txt` / `transcript.srt` / `transcript.json`。
+
+## 5.2 YouTube 链接转文字
 
 YouTube 也通过同一套 `yt-dlp + faster-whisper` 流程处理：
 
@@ -136,16 +159,16 @@ YouTube 也通过同一套 `yt-dlp + faster-whisper` 流程处理：
 
 ## 8. 使用 faster-whisper
 
-默认参数适合 RTX 3060 Ti：
+默认参数更偏向识别准确率，适合有 NVIDIA 显卡的机器优先尝试：
 
 ```powershell
-.\scripts\run.ps1 transcribe "<repo>\data\audio\test.wav" --engine faster-whisper --model large-v3-turbo --device cuda --compute-type float16
+.\scripts\run.ps1 transcribe "<repo>\data\audio\test.wav" --engine faster-whisper --model large-v3 --device cuda --compute-type int8_float16
 ```
 
-准确率优先可尝试：
+显存充足时还可以进一步尝试：
 
 ```powershell
-.\scripts\run.ps1 transcribe "<repo>\data\audio\test.wav" --engine faster-whisper --model large-v3 --compute-type int8_float16
+.\scripts\run.ps1 transcribe "<repo>\data\audio\test.wav" --engine faster-whisper --model large-v3 --compute-type float16
 ```
 
 CPU 兜底：
@@ -206,7 +229,7 @@ FunASR 模型和 ModelScope 缓存会固定在：
 .\scripts\gui.ps1
 ```
 
-GUI 支持粘贴 URL、选择本地音视频、选择 `faster-whisper` / `funasr` / `compare` / `extract-audio`，并可打开输出目录。
+GUI 支持粘贴 URL、选择本地音视频、选择 `faster-whisper` / `funasr` / `compare` / `extract-audio` / `list-playlist` / `transcribe-playlist`，并可打开输出目录。
 
 ## 11. Cookie 使用方式
 

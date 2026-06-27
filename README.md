@@ -1,6 +1,6 @@
 # Video-Audio-to-Text-Transcription
 
-Windows local transcription tool for Bilibili, YouTube, local video, and local audio.
+Windows local transcription tool for Bilibili, Bilibili UP collections/series, YouTube, local video, and local audio.
 
 [中文介绍](README.zh-CN.md)
 
@@ -9,9 +9,10 @@ This repository contains source code and deployment scripts only. It intentional
 ## Features
 
 - Bilibili and YouTube URL transcription through `yt-dlp`
+- Bilibili UP collection / series parsing and batch transcription
 - Local video and audio transcription
 - Local downloaded video to WAV audio extraction without transcription
-- `faster-whisper` as the default ASR engine
+- `faster-whisper` as the default ASR engine, using the higher quality `large-v3` profile by default
 - Optional `FunASR / SenseVoiceSmall` comparison engine
 - `txt`, `srt`, and `json` output
 - Tkinter local GUI
@@ -71,6 +72,13 @@ Process a Bilibili or YouTube URL:
 ```powershell
 .\scripts\run.ps1 all "https://www.bilibili.com/video/BVxxxx"
 .\scripts\run.ps1 all "https://www.youtube.com/watch?v=xxxx"
+```
+
+List the Bilibili UP collection or series that contains a video, then batch transcribe it:
+
+```powershell
+.\scripts\run.ps1 list-playlist "https://www.bilibili.com/video/BVxxxx"
+.\scripts\run.ps1 transcribe-playlist "https://www.bilibili.com/video/BVxxxx"
 ```
 
 Transcribe a local file:

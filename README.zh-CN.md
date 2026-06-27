@@ -1,12 +1,13 @@
 # Video-Audio-to-Text-Transcription 中文介绍
 
-这是一个面向 Windows 本地使用的音视频转文字工具。它可以处理 B站链接、YouTube 链接、本地视频和本地音频，输出 `txt`、`srt`、`json` 三种格式。
+这是一个面向 Windows 本地使用的音视频转文字工具。它可以处理 B站链接、B站 UP 主合集 / 系列、YouTube 链接、本地视频和本地音频，输出 `txt`、`srt`、`json` 三种格式。
 
 本仓库只发布源码和部署脚本，不提交本机成品环境。也就是说，仓库里不会提交 `.venv`、ffmpeg、uv、模型文件、缓存、Cookie、下载的视频音频、转写结果和日志。别人 clone 后运行初始化脚本即可自动下载缺失的运行组件，也可以提前预下载默认识别模型。
 
 ## 主要功能
 
 - 支持 B站视频转文字。
+- 支持解析视频所属的 B站 UP 主合集 / 系列，并批量转录整套视频。
 - 支持 YouTube 视频转文字。
 - 支持本地视频和本地音频转文字。
 - 支持只把本地已下载视频转换成 WAV 音频，不做转写。
@@ -78,6 +79,18 @@ runtime\ffmpeg\bin\ffprobe.exe
 .\scripts\run.ps1 all "https://www.bilibili.com/video/BVxxxx"
 ```
 
+解析某个 B站视频所属的 UP 主合集 / 系列：
+
+```powershell
+.\scripts\run.ps1 list-playlist "https://www.bilibili.com/video/BVxxxx"
+```
+
+批量转录该合集 / 系列：
+
+```powershell
+.\scripts\run.ps1 transcribe-playlist "https://www.bilibili.com/video/BVxxxx"
+```
+
 处理 YouTube 链接：
 
 ```powershell
@@ -142,8 +155,10 @@ models
 如果使用 RTX 3060 Ti 这类 8GB 显存显卡，日常建议：
 
 ```powershell
---engine faster-whisper --model large-v3-turbo --device cuda --compute-type float16 --language zh --vad
+--engine faster-whisper --model large-v3 --device cuda --compute-type int8_float16 --language zh --vad
 ```
+
+当前默认识别负载已经偏向准确率：`large-v3`、`int8_float16`、`beam_size=8`。如果显存不足，再手动降到 `large-v3-turbo`、`medium` 或 CPU 模式。
 
 如果中文口语识别效果不满意，可以用 `compare` 跑一次 FunASR 对照；如果更看重字幕时间轴，通常优先使用 `faster-whisper` 的 SRT。
 

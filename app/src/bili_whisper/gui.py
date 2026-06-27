@@ -47,7 +47,16 @@ class BiliWhisperGui:
         ttk.Combobox(
             self.root,
             textvariable=self.mode_var,
-            values=["all", "transcribe", "compare", "extract-audio", "download-audio", "list-subs"],
+            values=[
+                "all",
+                "transcribe",
+                "transcribe-playlist",
+                "list-playlist",
+                "compare",
+                "extract-audio",
+                "download-audio",
+                "list-subs",
+            ],
             state="readonly",
         ).grid(row=1, column=1, sticky="ew", **pad)
 
@@ -100,7 +109,7 @@ class BiliWhisperGui:
             return
         mode = self.mode_var.get()
         args = [mode, value]
-        if mode in {"all", "transcribe"}:
+        if mode in {"all", "transcribe", "transcribe-playlist"}:
             args.extend(["--engine", self.engine_var.get()])
             model = self.model_var.get().strip()
             if model:
